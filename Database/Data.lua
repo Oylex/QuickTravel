@@ -94,7 +94,7 @@ local instanceDatabase = {
     ["mogushan_palace"] = {spellID = 131222, nameKey = "DUNGEON_MOGUSHAN_PALACE"},
     ["shado_pan_monastery"] = {spellID = 131206, nameKey = "DUNGEON_SHADO_PAN_MONASTERY"},
     ["stormstout_brewery"] = {spellID = 131205, nameKey = "DUNGEON_STORMSTOUT_BREWERY"},
-    
+
     -- Warlords of Draenor Dungeons
     ["shadowmoon_burial"] = {spellID = 159899, nameKey = "DUNGEON_SHADOWMOON_BURIAL_GROUNDS"},
     ["everbloom"] = {spellID = 159901, nameKey = "DUNGEON_EVERBLOOM"},
@@ -104,7 +104,7 @@ local instanceDatabase = {
     ["upper_blackrock"] = {spellID = 159902, nameKey = "DUNGEON_UPPER_BLACKROCK_SPIRE"},
     ["grimrail_depot"] = {spellID = 159900, nameKey = "DUNGEON_GRIMRAIL_DEPOT"},
     ["iron_docks"] = {spellID = 159896, nameKey = "DUNGEON_IRON_DOCKS"},
-    
+
     -- Legion Dungeons
     ["darkheart_thicket"] = {spellID = 424163, nameKey = "DUNGEON_DARKHEART_THICKET"},
     ["black_rook_hold"] = {spellID = 424153, nameKey = "DUNGEON_BLACK_ROOK_HOLD"},
@@ -112,7 +112,7 @@ local instanceDatabase = {
     ["neltharions_lair"] = {spellID = 410078, nameKey = "DUNGEON_NELTHARIONS_LAIR"},
     ["court_stars"] = {spellID = 393766, nameKey = "DUNGEON_COURT_OF_STARS"},
     ["karazhan"] = {spellID = 373262, nameKey = "DUNGEON_KARAZHAN"},
-    
+
     -- Battle for Azeroth Dungeons with faction-specific handling
     ["ataldazar"] = {spellID = 424187, nameKey = "DUNGEON_ATALDAZAR"},
     ["freehold"] = {spellID = 410071, nameKey = "DUNGEON_FREEHOLD"},
@@ -121,7 +121,7 @@ local instanceDatabase = {
     ["mechagon"] = {spellID = 373274, nameKey = "DUNGEON_MECHAGON"},
     ["siege_boralus"] = { alliance = 445418, horde = 464256, nameKey = "DUNGEON_SIEGE_OF_BORALUS"}, -- Factiopn-specific spells
     ["motherlode"] = { alliance = 467553, horde = 467555, nameKey = "DUNGEON_THE_MOTHERLOAD"}, -- Factiopn-specific spells
-    
+
     -- Shadowlands Dungeons and Raids
     ["necrotic_wake"] = {spellID = 354462, nameKey = "DUNGEON_THE_NECROTIC_WAKE"},
     ["plaguefall"] = {spellID = 354463, nameKey = "DUNGEON_PLAGUEFALL"},
@@ -135,7 +135,7 @@ local instanceDatabase = {
     ["castle_nathria"] = {spellID = 373190, nameKey = "RAID_CASTLE_NATHRIA"},
     ["sanctum_domination"] = {spellID = 373191, nameKey = "RAID_SANCTUM_OF_DOMINATION"},
     ["sepulcher_first_ones"] = {spellID = 373192, nameKey = "RAID_SEPULCHER_OF_THE_FIRST_ONES"},
-    
+
     -- Dragonflight Dungeons and Raids
     ["ruby_life_pools"] = {spellID = 393256, nameKey = "DUNGEON_RUBY_LIFE_POOLS"},
     ["nokhud_offensive"] = {spellID = 393262, nameKey = "DUNGEON_NOKHUD_OFFENSIVE"},
@@ -149,7 +149,7 @@ local instanceDatabase = {
     ["vault_incarnates"] = {spellID = 432254, nameKey = "RAID_VAULT_OF_THE_INCARNATES"},
     ["aberrus"] = {spellID = 432257, nameKey = "RAID_ABBERUS_THE_SHADOWED_CRUCIBLE"},
     ["amirdrassil"] = {spellID = 432258, nameKey = "RAID_AMIRDRASSIL_THE_DREAMS_HOPE"},
-    
+
     -- The War Within Dungeons and Raids
     ["city_threads"] = {spellID = 445416, nameKey = "DUNGEON_CITY_OF_THREADS"},
     ["ara_kara"] = {spellID = 445417, nameKey = "DUNGEON_ARA_KARA_CITY_OF_ECHOS"},
@@ -160,7 +160,7 @@ local instanceDatabase = {
     ["cinderbrew_meadery"] = {spellID = 445440, nameKey = "DUNGEON_CINDERBREW_MEADERY"},
     ["priory_sacred_flame"] = {spellID = 445444, nameKey = "DUNGEON_PRIORY_OF_THE_SACRED_FLAME"},
     ["operation_floodgate"] = {spellID = 1216786, nameKey = "DUNGEON_OPERATION_FLOODGATE"},
-    ["eco_dome_al_dani"] = {spellID = 1237215, nameKey = "DUNGEON_ECO_DOME_AL_DANI"},    
+    ["eco_dome_al_dani"] = {spellID = 1237215, nameKey = "DUNGEON_ECO_DOME_AL_DANI"},
     ["liberation_undermine"] = {spellID = 1226482, nameKey = "RAID_LIBERATION_OF_UNDERMINE"},
     ["manaforge_omega"] = {spellID = 1239155, nameKey = "RAID_MANAFORGE_OMEGA"},
 
@@ -207,7 +207,7 @@ local instanceDatabase = {
     ["mage_teleport_oribos"] = {spellID = 344587, nameKey = "MAGE_TELEPORT_ORIBOS"},
     ["mage_teleport_valdrakken"] = {spellID = 395277, nameKey = "MAGE_TELEPORT_VALDRAKKEN"},
     ["mage_teleport_dornogal"] = {spellID = 446540, nameKey = "MAGE_TELEPORT_DORNOGAL"},
-    
+
     -- Mage portal
     ["mage_portal_stormwind"] = {alliance = 10059, nameKey = "MAGE_PORTAL_STORMWIND"},
     ["mage_portal_ironforge"] = {alliance = 11416, nameKey = "MAGE_PORTAL_IRONFORGE"},
@@ -247,7 +247,7 @@ local DataManager = {
         lastScan = 0,
         cacheTimeout = 120 -- Cache valid for 2 minutes
     },
-    
+
     -- Retrieve complete instance information by key with faction-specific spell support
     GetInstanceInfo = function(self, instanceKey)
         local instanceData = instanceDatabase[instanceKey]
@@ -268,13 +268,13 @@ local DataManager = {
                 fallback = instanceData.fallback,
                 nameKey = "hearthstone_variant"
             }
-        end  
-        
+        end
+
         -- Handle faction-specific spells (Alliance/Horde different spell IDs)
         if instanceData.alliance or instanceData.horde then
             local playerFaction = UnitFactionGroup("player")
             local spellID
-            
+
             if playerFaction == "Alliance" and instanceData.alliance then
                 spellID = instanceData.alliance
             elseif playerFaction == "Horde" and instanceData.horde then
@@ -283,30 +283,31 @@ local DataManager = {
                 -- Fallback for unknown faction scenarios
                 spellID = instanceData.alliance or instanceData.horde
             end
-            
+
             return {
                 spellID = spellID,
                 nameKey = instanceData.nameKey
             }
         end
-        
+
         -- Return standard spell data
         return instanceData
     end,
-    
+
     -- Scan and cache all available portals based on player knowledge and settings
     GetAvailablePortals = function(self, forceRefresh)
         local now = GetTime()
-        
+
         -- Return cached data if still valid and not forcing refresh
-        if not forceRefresh and self._cache.availablePortals and 
+        if not forceRefresh and self._cache.availablePortals and
         (now - self._cache.lastScan < self._cache.cacheTimeout) then
             return self._cache.availablePortals
         end
-        
+
         local portals = {}
         local showUnlearned = addon.QuickTravel.db and addon.QuickTravel.db.showUnlearnedSpells or false
-        
+        local showUnlearnedCurrentSeasonOnly = addon.QuickTravel.db and addon.QuickTravel.db.showUnlearnedCurrentSeasonOnlySpells or false
+
         -- Get user-customized expansion order (only enabled categories)
         local customOrder = self:GetCustomExpansionOrder()
 
@@ -343,12 +344,12 @@ local DataManager = {
                                 local isKnown = false
                                 local displayTexture = 134400 -- Default icon
                                 local displayName = ""
-                                
+
                                 -- Process toy items
                                 if instanceInfo.toyID then
                                     isKnown = PlayerHasToy(instanceInfo.toyID)
                                     displayTexture = C_Item.GetItemIconByID(instanceInfo.toyID) or 134400
-                                    
+
                                     if instanceInfo.nameKey and type(instanceInfo.nameKey) == "string" then
                                         displayName = L[instanceInfo.nameKey]
                                     else
@@ -358,7 +359,7 @@ local DataManager = {
                                 elseif instanceInfo.variants then
                                     local useRandom = addon.QuickTravel.db and addon.QuickTravel.db.useRandomHearthstoneVariant
                                     local selectedVariant = addon.QuickTravel.db and addon.QuickTravel.db.selectedHearthstoneVariant
-                                    
+
                                     -- Check if player owns any Hearthstone variants
                                     local hasVariants = false
                                     for _, variant in ipairs(instanceInfo.variants) do
@@ -367,9 +368,9 @@ local DataManager = {
                                             break
                                         end
                                     end
-                                    
+
                                     isKnown = hasVariants or GetItemCount(instanceInfo.fallback) > 0
-                                    
+
                                     -- Set display name and icon based on variant settings
                                     if useRandom then
                                         displayName = L["HEARTHSTONE_RANDOM_VARIANT"]
@@ -383,7 +384,7 @@ local DataManager = {
                                                 break
                                             end
                                         end
-                                        
+
                                         if selectedVariantData then
                                             displayName = L[selectedVariantData.nameKey] or C_Item.GetItemNameByID(selectedVariant) or L["HEARTHSTONE_VARIANT_DEFAULT"]
                                             displayTexture = C_Item.GetItemIconByID(selectedVariant) or C_Item.GetItemIconByID(instanceInfo.fallback) or 134400
@@ -401,9 +402,9 @@ local DataManager = {
                                     displayTexture = C_Spell.GetSpellTexture(instanceInfo.spellID) or 134400
                                     displayName = L[instanceInfo.nameKey]
                                 end
-                                
+
                                 -- Include portal if known or if showing unlearned items is enabled
-                                if (isKnown or showUnlearned) and (instanceInfo.toyID or instanceInfo.spellID or instanceInfo.variants) then
+                                if (isKnown or (showUnlearned and (not showUnlearnedCurrentSeasonOnly or addon.ConfigManager.CATEGORY_KEYS.CURRENT_SEASON == categoryKey))) and (instanceInfo.toyID or instanceInfo.spellID or instanceInfo.variants) then
                                     table.insert(portals, {
                                         instanceKey = instanceKey,
                                         spellID = instanceInfo.spellID,
@@ -424,37 +425,37 @@ local DataManager = {
                 end
             end
         end
-        
+
         -- Update cache with fresh data
         self._cache.availablePortals = portals
         self._cache.lastScan = now
         return portals
     end,
-    
+
     -- Organize portal list by expansion for UI display
     OrganizeByExpansion = function(self, portals)
         local organized = {}
         local finalOrder = self:GetCustomExpansionOrder()
-        
+
         -- Initialize empty tables for each expansion category
         for _, expansion in ipairs(finalOrder) do
             organized[expansion] = {}
         end
-        
+
         -- Sort portals into their respective expansion categories
         for _, portal in ipairs(portals) do
             if organized[portal.expansion] then
                 table.insert(organized[portal.expansion], portal)
             end
         end
-        
+
         return organized, finalOrder
     end,
 
     -- Get user-customized expansion display order from addon settings
     GetCustomExpansionOrder = function(self)
         local customOrder = {}
-        
+
         -- Use custom category order from user settings if available
         if addon.QuickTravel and addon.QuickTravel.db and addon.QuickTravel.db.categoryOrder then
             for _, category in ipairs(addon.QuickTravel.db.categoryOrder) do
@@ -464,7 +465,7 @@ local DataManager = {
                     table.insert(customOrder, localizedName)
                 end
             end
-            
+
             -- Return empty table if no categories are enabled
             if #customOrder == 0 then
                 return {}
@@ -476,10 +477,10 @@ local DataManager = {
                 table.insert(customOrder, localizedName)
             end
         end
-        
+
         return customOrder
     end,
-    
+
     -- Clear cached data to force fresh scan on next request
     InvalidateCache = function(self)
         self._cache.availablePortals = nil

@@ -7,7 +7,7 @@ local CURRENT_CONFIG_VERSION = 2
 -- Stable category keys for internal references
 local CATEGORY_KEYS = {
     CURRENT_SEASON = "current_season",
-    HEARTHSTONES = "hearthstones", 
+    HEARTHSTONES = "hearthstones",
     CATACLYSM = "cataclysm",
     MISTS_OF_PANDARIA = "mists_of_pandaria",
     WARLORDS_OF_DRAENOR = "warlords_of_draenor",
@@ -61,22 +61,22 @@ end
 -- Check for config version changes and perform reset if needed
 local function CheckAndResetConfig()
     local needsReset = false
-    
+
     -- Check version or detect legacy localized system
     if not QuickTravelDB or not QuickTravelDB.configVersion or QuickTravelDB.configVersion < CURRENT_CONFIG_VERSION then
         needsReset = true
     end
-    
+
     -- Migration from old name-based to key-based system
     if QuickTravelDB and QuickTravelDB.categoryOrder and QuickTravelDB.categoryOrder[1] then
         if QuickTravelDB.categoryOrder[1].name and not QuickTravelDB.categoryOrder[1].key then
             needsReset = true
         end
     end
-    
+
     if needsReset then
         print("|cffff6600QuickTravel|r: Configuration reset due to system update. Reconfigure with /qt if needed.")
-        
+
         -- Reset to defaults
         QuickTravelDB = {
             configVersion = CURRENT_CONFIG_VERSION,
@@ -88,12 +88,13 @@ local function CheckAndResetConfig()
             categoryOrder = DEFAULT_CATEGORY_ORDER,
             showLFGTab = true,
             showUnlearnedSpells = false,
+            showUnlearnedCurrentSeasonOnlySpells = false,
             showSpellTooltips = true
         }
-        
+
         return true
     end
-    
+
     return false
 end
 

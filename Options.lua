@@ -11,7 +11,7 @@ function Options:InitializeSettings()
     if not QuickTravelDB then
         QuickTravelDB = {}
     end
-    
+
     local DEFAULT_SETTINGS = {
         configVersion = addon.ConfigManager.CURRENT_CONFIG_VERSION,   -- (number) Config schema version for upgrades/reset
         showLoginMessage = true,                                      -- (boolean) Show login message in chat when addon loads
@@ -22,20 +22,21 @@ function Options:InitializeSettings()
         categoryOrder = addon.ConfigManager.DEFAULT_CATEGORY_ORDER,   -- (table, array) User's preferred order and enable state for portal categories
         showLFGTab = true,                                            -- (boolean) Show the QuickTravel button in the Group Finder (LFG)
         showUnlearnedSpells = false,                                  -- (boolean) Show spells/portals the player has not learned yet
+        showUnlearnedCurrentSeasonOnlySpells = false,                                  -- (boolean) Show spells/portals the player has not learned yet
         showSpellTooltips = true,                                     -- (boolean) Show tooltips for spells/portals in the UI
         frameHeight = 500,                                            -- (number) default height of the main frame
         lockFrameHeight = false,                                      -- (boolean) Lock frame height to prevent resizing
         showMinimapIcon = true,                                       -- (boolean) show the minimap icon
         minimap = { angle = 200 },                                    -- (table) persists the icon angle around the minimap
     }
-    
+
     -- Apply defaults for missing settings
     for key, defaultValue in pairs(DEFAULT_SETTINGS) do
         if QuickTravelDB[key] == nil then
             QuickTravelDB[key] = defaultValue
         end
     end
-    
+
     self.db = QuickTravelDB
 
     -- Remove any category entry without a 'key' field
@@ -92,7 +93,7 @@ local function GetOwnedHearthstoneVariants(forceRefresh)
     if not forceRefresh and variantCache.ownedVariants and (now - variantCache.lastScan < variantCache.cacheTimeout) then
         return variantCache.ownedVariants
     end
-    
+
     local owned = {}
     local constants = addon.constants
     if constants and constants.hearthstoneVariants then
@@ -104,7 +105,7 @@ local function GetOwnedHearthstoneVariants(forceRefresh)
         end
         table.sort(owned, function(a, b) return a.name < b.name end)
     end
-    
+
     variantCache.ownedVariants = owned
     variantCache.lastScan = now
     return owned
@@ -121,8 +122,8 @@ function Options:CreateOptionsFrame(mainFrame)
     if self.optionsFrame then
         return self.optionsFrame
     end
-    
-    -- Main options frame using ButtonFrameTemplate 
+
+    -- Main options frame using ButtonFrameTemplate
     self.optionsFrame = CreateFrame("Frame", "QuickTravelOptionsFrame", UIParent, "ButtonFrameTemplate")
     self.optionsFrame:SetSize(290, 470)
     if mainFrame then
@@ -131,12 +132,12 @@ function Options:CreateOptionsFrame(mainFrame)
         self.optionsFrame:SetPoint("CENTER")
     end
     self.optionsFrame:EnableMouse(true)
-    
+
     -- Hide unwanted elements from ButtonFrameTemplate
     ButtonFrameTemplate_HidePortrait(self.optionsFrame)
     ButtonFrameTemplate_HideButtonBar(self.optionsFrame)
     self.optionsFrame.Inset:Hide()
-    
+
     -- Set frame title
     self.optionsFrame:SetTitle(OPTIONS)
 
@@ -162,7 +163,7 @@ function Options:CreateOptionsFrame(mainFrame)
     local optionsContent = CreateFrame("Frame", nil, self.optionsFrame)
     optionsContent:SetPoint("TOPLEFT", self.optionsFrame, "TOPLEFT", 10, -40)
     optionsContent:SetPoint("BOTTOMRIGHT", self.optionsFrame, "BOTTOMRIGHT", -10, 10)
-    
+
     local categoriesContent = CreateFrame("Frame", nil, self.optionsFrame)
     categoriesContent:SetPoint("TOPLEFT", self.optionsFrame, "TOPLEFT", 10, -40)
     categoriesContent:SetPoint("BOTTOMRIGHT", self.optionsFrame, "BOTTOMRIGHT", -10, 10)
@@ -173,11 +174,11 @@ function Options:CreateOptionsFrame(mainFrame)
     categoriesTitle:SetPoint("TOPLEFT", categoriesContent, "TOPLEFT", 8, 0)
     categoriesTitle:SetText(L["CATEGORIES_ORDER_HEADER"])
     categoriesTitle:SetTextColor(1, 0.82, 0)
-    
+
     local categoriesScrollFrame = CreateFrame("ScrollFrame", nil, categoriesContent, "UIPanelScrollFrameTemplate")
     categoriesScrollFrame:SetPoint("TOPLEFT", categoriesContent, "TOPLEFT", 0, -20)
     categoriesScrollFrame:SetPoint("BOTTOMRIGHT", categoriesContent, "BOTTOMRIGHT", -25, 0)
-    
+
     local categoriesContentFrame = CreateFrame("Frame", nil, categoriesScrollFrame)
     categoriesContentFrame:SetSize(300, 1)
     categoriesScrollFrame:SetScrollChild(categoriesContentFrame)
@@ -227,9 +228,18 @@ function Options:CreateOptionsFrame(mainFrame)
     showUnlearnedText:SetText(L["SHOW_UNLEARNED_SPELLS"])
     showUnlearnedText:SetTextColor(1, 1, 1)
 
+    -- Show unlearned spells (Current Season Only) checkbox
+    local showUnlearnedCurrentSeasonOnlyCheckbox = CreateFrame("CheckButton", nil, self.optionsFrame.optionsContent, "InterfaceOptionsCheckButtonTemplate")
+    showUnlearnedCurrentSeasonOnlyCheckbox:SetPoint("TOPLEFT", showUnlearnedCheckbox, "BOTTOMLEFT", 22, -10)
+    showUnlearnedCurrentSeasonOnlyCheckbox:SetSize(22, 22)
+    local showUnlearnedCurrentSeasonOnlyText = self.optionsFrame.optionsContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    showUnlearnedCurrentSeasonOnlyText:SetPoint("LEFT", showUnlearnedCurrentSeasonOnlyCheckbox, "RIGHT", 8, 0)
+    showUnlearnedCurrentSeasonOnlyText:SetText(L["SHOW_UNLEARNED_SPELLS_CURRENT_SEASON_ONLY"])
+    showUnlearnedCurrentSeasonOnlyText:SetTextColor(1, 1, 1)
+
     -- Show LFG tab checkbox
     local showLFGTabCheckbox = CreateFrame("CheckButton", nil, self.optionsFrame.optionsContent, "InterfaceOptionsCheckButtonTemplate")
-    showLFGTabCheckbox:SetPoint("TOPLEFT", showUnlearnedCheckbox, "BOTTOMLEFT", 0, -10)
+    showLFGTabCheckbox:SetPoint("TOPLEFT", showUnlearnedCurrentSeasonOnlyCheckbox, "BOTTOMLEFT", -22, -10)
     showLFGTabCheckbox:SetSize(22, 22)
     local showLFGTabText = self.optionsFrame.optionsContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     showLFGTabText:SetPoint("LEFT", showLFGTabCheckbox, "RIGHT", 8, 0)
@@ -296,6 +306,8 @@ function Options:CreateOptionsFrame(mainFrame)
     self.optionsFrame.hearthstoneDropdown = hearthstoneDropdown
     self.optionsFrame.showLFGTabCheckbox = showLFGTabCheckbox
     self.optionsFrame.showUnlearnedCheckbox = showUnlearnedCheckbox
+    self.optionsFrame.showUnlearnedCurrentSeasonOnlyCheckbox = showUnlearnedCurrentSeasonOnlyCheckbox
+    self.optionsFrame.showUnlearnedCurrentSeasonOnlyText = showUnlearnedCurrentSeasonOnlyText
     self.optionsFrame.showTooltipsCheckbox = showTooltipsCheckbox
     self.optionsFrame.randomHearthstoneText = randomHearthstoneText
     self.optionsFrame.lockHeightCheckbox = lockHeightCheckbox
@@ -317,7 +329,7 @@ function Options:SetupEventHandlers()
         self.db.showLoginMessage = checkbox:GetChecked()
         print("|cff00ff00QuickTravel|r: " .. (self.db.showLoginMessage and L["MSG_LOGIN_MESSAGE_ENABLED"] or L["MSG_LOGIN_MESSAGE_DISABLED"]))
     end)
-    
+
     -- Auto-close toggle
     self.optionsFrame.autoCloseCheckbox:SetScript("OnClick", function(checkbox)
         self.db.autoClose = checkbox:GetChecked()
@@ -329,8 +341,8 @@ function Options:SetupEventHandlers()
         if QuickTravel then
             QuickTravel:UpdateResizeState()
         end
-    end)    
-    
+    end)
+
     -- Random Hearthstone variant toggle
     self.optionsFrame.randomHearthstoneCheckbox:SetScript("OnClick", function(checkbox)
         self.db.useRandomHearthstoneVariant = checkbox:GetChecked()
@@ -342,7 +354,7 @@ function Options:SetupEventHandlers()
             QuickTravel:PopulatePortalList()
         end
     end)
-    
+
     -- LFG tab visibility toggle
     self.optionsFrame.showLFGTabCheckbox:SetScript("OnClick", function(checkbox)
         self.db.showLFGTab = checkbox:GetChecked()
@@ -365,8 +377,8 @@ function Options:SetupEventHandlers()
         if addon.QuickTravel then
             addon.QuickTravel:ToggleMinimap(self.db.showMinimapIcon)
         end
-    end)    
-    
+    end)
+
     -- Unlearned spells visibility toggle
     self.optionsFrame.showUnlearnedCheckbox:SetScript("OnClick", function(checkbox)
         self.db.showUnlearnedSpells = checkbox:GetChecked()
@@ -376,8 +388,32 @@ function Options:SetupEventHandlers()
         if QuickTravel then
             QuickTravel:PopulatePortalList()
         end
+
+        -- Enable/disable current season only option
+        local currentSeasonOnlyEnabled = checkbox:GetChecked()
+        self.optionsFrame.showUnlearnedCurrentSeasonOnlyCheckbox:SetEnabled(currentSeasonOnlyEnabled)
+        if currentSeasonOnlyEnabled then
+            if self.optionsFrame.showUnlearnedCurrentSeasonOnlyText then
+                self.optionsFrame.showUnlearnedCurrentSeasonOnlyText:SetTextColor(1, 1, 1)
+            end
+        else
+            if self.optionsFrame.showUnlearnedCurrentSeasonOnlyText then
+                self.optionsFrame.showUnlearnedCurrentSeasonOnlyText:SetTextColor(0.5, 0.5, 0.5)
+            end
+        end
     end)
-    
+
+    -- Unlearned season only spells visibility toggle
+    self.optionsFrame.showUnlearnedCurrentSeasonOnlyCheckbox:SetScript("OnClick", function(checkbox)
+        self.db.showUnlearnedCurrentSeasonOnlySpells = checkbox:GetChecked()
+        if constants then
+            constants.DataManager:InvalidateCache()
+        end
+        if QuickTravel then
+            QuickTravel:PopulatePortalList()
+        end
+    end)
+
     -- Spell tooltips toggle
     self.optionsFrame.showTooltipsCheckbox:SetScript("OnClick", function(checkbox)
         self.db.showSpellTooltips = checkbox:GetChecked()
@@ -387,7 +423,7 @@ end
 -- Load saved settings into UI controls
 function Options:LoadOptionsValues()
     if not self.optionsFrame then return end
-    
+
     self.optionsFrame.hideLoginCheckbox:SetChecked(self.db.showLoginMessage)
     self.optionsFrame.autoCloseCheckbox:SetChecked(self.db.autoClose)
     self.optionsFrame.randomHearthstoneCheckbox:SetChecked(self.db.useRandomHearthstoneVariant)
@@ -395,6 +431,7 @@ function Options:LoadOptionsValues()
     self:UpdateHearthstoneControls()
     self.optionsFrame.showLFGTabCheckbox:SetChecked(self.db.showLFGTab)
     self.optionsFrame.showUnlearnedCheckbox:SetChecked(self.db.showUnlearnedSpells)
+    self.optionsFrame.showUnlearnedCurrentSeasonOnlyCheckbox:SetChecked(self.db.showUnlearnedCurrentSeasonOnlySpells)
     self.optionsFrame.showTooltipsCheckbox:SetChecked(self.db.showSpellTooltips)
     self.optionsFrame.lockHeightCheckbox:SetChecked(self.db.lockFrameHeight)
     self.optionsFrame.showMinimapCheckbox:SetChecked(self.db.showMinimapIcon)
@@ -430,23 +467,23 @@ end
 function Options:SetupHearthstoneDropdown()
     local dropdown = self.optionsFrame.hearthstoneDropdown
     if not dropdown then return end
-    
+
     local ownedVariants = GetOwnedHearthstoneVariants()
-    
+
     -- Set default selection if none exists
     if #ownedVariants > 0 and not self.db.selectedHearthstoneVariant then
         self.db.selectedHearthstoneVariant = ownedVariants[1].id
     end
-    
+
     -- Callback functions...
     local function isSelectedCallback(variantID)
         return self.db.selectedHearthstoneVariant == variantID
     end
-    
+
     local function onSelectionCallback(variantID)
         self.db.selectedHearthstoneVariant = variantID
         dropdown:GenerateMenu()
-        
+
         if addon.constants then
             addon.constants.DataManager:InvalidateCache()
         end
@@ -454,7 +491,7 @@ function Options:SetupHearthstoneDropdown()
             addon.QuickTravel:PopulatePortalList()
         end
     end
-    
+
     -- Setup dropdown menu (WITHOUT icons)
     dropdown:SetupMenu(function(dropdown, rootDescription)
         if #ownedVariants == 0 then
@@ -471,14 +508,14 @@ function Options:SetupHearthstoneDropdown()
             end
         end
     end)
-    
+
     dropdown:GenerateMenu()
 end
 
 -- Update Hearthstone control states based on category and variant availability
 function Options:UpdateHearthstoneControls()
     if not self.optionsFrame then return end
-    
+
     -- Check if Hearthstones category is enabled
     local hearthstonesEnabled = false
     if self.db.categoryOrder then
@@ -491,11 +528,11 @@ function Options:UpdateHearthstoneControls()
     else
         hearthstonesEnabled = true
     end
-    
+
     local ownedVariants = GetOwnedHearthstoneVariants()
     local hasVariants = #ownedVariants > 0
     local randomEnabled = hearthstonesEnabled and hasVariants
-    
+
     -- Enable/disable random checkbox based on category and variant availability
     self.optionsFrame.randomHearthstoneCheckbox:SetEnabled(randomEnabled)
     if randomEnabled then
@@ -507,17 +544,17 @@ function Options:UpdateHearthstoneControls()
             self.optionsFrame.randomHearthstoneText:SetTextColor(0.5, 0.5, 0.5)
         end
     end
-    
+
     -- Auto-disable random setting if requirements not met
     if not hearthstonesEnabled or not hasVariants then
         self.optionsFrame.randomHearthstoneCheckbox:SetChecked(false)
         self.db.useRandomHearthstoneVariant = false
     end
-    
+
     -- Enable/disable dropdown based on random setting
     local dropdownEnabled = hearthstonesEnabled and hasVariants and not self.db.useRandomHearthstoneVariant
     self.optionsFrame.hearthstoneDropdown:SetEnabled(dropdownEnabled)
-    
+
     -- Refresh dropdown menu
     if dropdownEnabled then
         self.optionsFrame.hearthstoneDropdown:GenerateMenu()
@@ -543,31 +580,31 @@ function Options:SetupCategoriesList()
     if not self.optionsFrame or not self.optionsFrame.categoriesContent then
         return
     end
-    
+
     -- Clear existing category items
     local children = {self.optionsFrame.categoriesContent:GetChildren()}
     for _, child in ipairs(children) do
         child:Hide()
         child:SetParent(nil)
     end
-    
+
     -- Ensure category order exists
     if not self.db.categoryOrder or #self.db.categoryOrder == 0 then
         self.db.categoryOrder = addon.ConfigManager.DEFAULT_CATEGORY_ORDER
     end
-    
+
     -- Get localized category names and sort by order
     local localizedCategories = addon.ConfigManager.GetLocalizedCategoryOrder(self.db.categoryOrder)
     table.sort(localizedCategories, function(a, b) return a.order < b.order end)
-    
+
     local yOffset = -30
-    
+
     -- Create UI elements for each category
     for i, category in ipairs(localizedCategories) do
         local categoryFrame = CreateFrame("Frame", nil, self.optionsFrame.categoriesContent)
         categoryFrame:SetSize(280, 30)
         categoryFrame:SetPoint("TOPLEFT", self.optionsFrame.categoriesContent, "TOPLEFT", 10, yOffset)
-        
+
         -- Enable/disable checkbox
         local checkbox = CreateFrame("CheckButton", nil, categoryFrame, "InterfaceOptionsCheckButtonTemplate")
         checkbox:SetPoint("LEFT", categoryFrame, "LEFT", 0, 0)
@@ -581,15 +618,15 @@ function Options:SetupCategoriesList()
                     break
                 end
             end
-            
+
             -- Update visual feedback for this category
             self:UpdateCategoryVisualState(categoryFrame, cb:GetChecked())
-            
+
             -- Update Hearthstone controls if this is the Hearthstones category
             if category.key == addon.ConfigManager.CATEGORY_KEYS.HEARTHSTONES then
                 self:UpdateHearthstoneControls()
             end
-            
+
             -- Refresh UI
             if addon.constants then
                 addon.constants.DataManager:InvalidateCache()
@@ -598,12 +635,12 @@ function Options:SetupCategoriesList()
                 addon.QuickTravel:PopulatePortalList()
             end
         end)
-        
+
         -- Category name
         local nameText = categoryFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         nameText:SetPoint("LEFT", checkbox, "RIGHT", 8, 0)
         nameText:SetText(category.name)
-        
+
         -- Move up button
         local upButton = CreateFrame("Button", nil, categoryFrame)
         upButton:SetSize(24, 24)
@@ -614,7 +651,7 @@ function Options:SetupCategoriesList()
         upButton:SetScript("OnClick", function()
             self:MoveCategoryUp(i)
         end)
-        
+
         -- Move down button
         local downButton = CreateFrame("Button", nil, categoryFrame)
         downButton:SetSize(24, 24)
@@ -625,7 +662,7 @@ function Options:SetupCategoriesList()
         downButton:SetScript("OnClick", function()
             self:MoveCategoryDown(i)
         end)
-        
+
         -- Disable buttons at list boundaries
         if i == 1 then
             upButton:SetEnabled(false)
@@ -633,16 +670,16 @@ function Options:SetupCategoriesList()
         if i == #localizedCategories then
             downButton:SetEnabled(false)
         end
-        
+
         -- Store references for visual updates
         categoryFrame.nameText = nameText
         categoryFrame.upButton = upButton
         categoryFrame.downButton = downButton
         categoryFrame.checkbox = checkbox
-        
+
         -- Apply initial visual state
         self:UpdateCategoryVisualState(categoryFrame, category.enabled)
-        
+
         yOffset = yOffset - 30
     end
 end
@@ -650,16 +687,16 @@ end
 -- Move category up in display order
 function Options:MoveCategoryUp(index)
     if index <= 1 or not self.db.categoryOrder then return end
-    
+
     -- Swap categories in database
     local temp = self.db.categoryOrder[index]
     self.db.categoryOrder[index] = self.db.categoryOrder[index - 1]
     self.db.categoryOrder[index - 1] = temp
-    
+
     -- Update order values
     self.db.categoryOrder[index].order = index
     self.db.categoryOrder[index - 1].order = index - 1
-    
+
     -- Refresh UI
     self:SetupCategoriesList()
     if addon.constants then
@@ -673,16 +710,16 @@ end
 -- Move category down in display order
 function Options:MoveCategoryDown(index)
     if not self.db.categoryOrder or index >= #self.db.categoryOrder then return end
-    
+
     -- Swap categories in database
     local temp = self.db.categoryOrder[index]
     self.db.categoryOrder[index] = self.db.categoryOrder[index + 1]
     self.db.categoryOrder[index + 1] = temp
-    
+
     -- Update order values
     self.db.categoryOrder[index].order = index
     self.db.categoryOrder[index + 1].order = index + 1
-    
+
     -- Refresh UI
     self:SetupCategoriesList()
     if addon.constants then
@@ -696,27 +733,27 @@ end
 -- Update visual state of a category based on enabled/disabled status
 function Options:UpdateCategoryVisualState(categoryFrame, isEnabled)
     if not categoryFrame then return end
-    
+
     local nameText = categoryFrame.nameText
     local upButton = categoryFrame.upButton
     local downButton = categoryFrame.downButton
-    
+
     -- Helper function to update button appearance
     local function updateButtonAppearance(button, enabled)
         if not button then return end
-        
+
         local normalTexture = button:GetNormalTexture()
         if normalTexture then
             normalTexture:SetDesaturated(not enabled)
         end
         button:SetAlpha(enabled and 1.0 or 0.5)
     end
-    
+
     -- Update text color
     if nameText then
         nameText:SetTextColor(isEnabled and 1 or 0.4, isEnabled and 1 or 0.4, isEnabled and 1 or 0.4)
     end
-    
+
     -- Update both buttons with the helper function
     updateButtonAppearance(upButton, isEnabled)
     updateButtonAppearance(downButton, isEnabled)
