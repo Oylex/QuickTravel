@@ -40,6 +40,7 @@ function QuickTravel:CreateMainFrame()
 
     -- Main frame using Blizzard's portrait template for consistency
     self.mainFrame = CreateFrame("Frame", "QuickTravelFrame", UIParent, "PortraitFrameTemplate")
+    self.mainFrame:SetFrameStrata("DIALOG")
     self.mainFrame:HookScript("OnShow", AnchorQuickTravelFrame)
     local savedHeight = addon.Options.db and addon.Options.db.frameHeight or 500
     self.mainFrame:SetSize(320, savedHeight)
@@ -49,7 +50,7 @@ function QuickTravel:CreateMainFrame()
     self.mainFrame:RegisterForDrag("LeftButton")
     self.mainFrame:SetScript("OnDragStart", self.mainFrame.StartMoving)
     self.mainFrame:SetScript("OnDragStop", self.mainFrame.StopMovingOrSizing)
-    
+
     -- Set portal icon as frame portrait
     SetPortraitToTexture(self.mainFrame.PortraitContainer.portrait, "Interface\\Icons\\inv_spell_arcane_portaldornogal")
     self.mainFrame.PortraitContainer.portrait:SetTexCoord(0.12, 0.96, 0.12, 0.92)
@@ -109,7 +110,7 @@ function QuickTravel:CreateMainFrame()
 
     -- Register main frame for ESC key handling
     table.insert(UISpecialFrames, "QuickTravelFrame")
-    
+
     self.mainFrame:Hide()
 
     return self.mainFrame
@@ -133,7 +134,7 @@ end
 function QuickTravel:SetupFrameResizing()
     -- Enable resizing
     self.mainFrame:SetResizable(true)
-    
+
     -- Create resize handle (bottom-right corner)
     local resizeButton = CreateFrame("Button", nil, self.mainFrame)
     resizeButton:SetSize(16, 16)
@@ -141,23 +142,23 @@ function QuickTravel:SetupFrameResizing()
     resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
     resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
     resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
-    
+
     -- Resize cursor on hover
     resizeButton:SetScript("OnEnter", function()
         SetCursor("UI_RESIZE_CURSOR")
     end)
-    
+
     resizeButton:SetScript("OnLeave", function()
         ResetCursor()
     end)
-    
+
     -- Handle resize drag
     resizeButton:SetScript("OnMouseDown", function(self, button)
         if button == "LeftButton" then
             QuickTravel.mainFrame:StartSizing("BOTTOMRIGHT")
         end
     end)
-    
+
     resizeButton:SetScript("OnMouseUp", function(self, button)
         if button == "LeftButton" then
             QuickTravel.mainFrame:StopMovingOrSizing()
@@ -167,17 +168,17 @@ function QuickTravel:SetupFrameResizing()
             end
         end
     end)
-    
+
     -- Constrain width and height limits
     self.mainFrame:SetScript("OnSizeChanged", function(frame, width, height)
         local needsUpdate = false
-        
+
         -- Keep width constant
         if width ~= 320 then
             frame:SetWidth(320)
             needsUpdate = true
         end
-        
+
         -- Enforce height limits (300-1000px)
         local minHeight, maxHeight = 300, 1000
         if height < minHeight then
@@ -187,16 +188,16 @@ function QuickTravel:SetupFrameResizing()
             frame:SetHeight(maxHeight)
             needsUpdate = true
         end
-        
+
         -- Save valid height
         if not needsUpdate and addon.Options.db then
             addon.Options.db.frameHeight = height
         end
     end)
-    
+
     -- Store reference
     self.mainFrame.resizeButton = resizeButton
-    
+
     -- Apply initial lock state
     self:UpdateResizeState()
 end
@@ -206,7 +207,7 @@ function QuickTravel:UpdateResizeState()
     if not self.mainFrame or not self.mainFrame.resizeButton then
         return
     end
-    
+
     local isLocked = addon.Options.db and addon.Options.db.lockFrameHeight or false
     self.mainFrame:SetResizable(not isLocked)
     self.mainFrame.resizeButton:SetShown(not isLocked)
@@ -217,50 +218,50 @@ function QuickTravel:CreateLFGButton()
     if self.lfgButton or not PVEFrame then
         return
     end
-    
+
     local button = CreateFrame("Button", "QuickTravel_LFGButton", PVEFrame)
     button:SetSize(130, 38)
-    
+
     -- Position in bottom left area
     button:SetPoint("BOTTOM", PVEFrame, "BOTTOMLEFT", 115, 20)
-    
+
     -- Button styling with War Within atlas
     button:SetNormalAtlas("auctionhouse-nav-button")
-    
+
     -- Create hover and pressed textures
     local highlight = button:CreateTexture(nil, "ARTWORK")
     highlight:SetSize(124, 24)
     highlight:SetPoint("CENTER", button, "CENTER", 0, 7)
     highlight:SetAtlas("auctionhouse-nav-button-highlight")
     highlight:SetAlpha(0)
-    
+
     local pressed = button:CreateTexture(nil, "ARTWORK")
     pressed:SetSize(124, 24)
     pressed:SetPoint("CENTER", button, "CENTER", 0, 7)
     pressed:SetAtlas("auctionhouse-nav-button-select")
     pressed:SetAlpha(0)
-    
+
     -- Track button state for hover effects
     local isPressed = false
-    
+
     -- Hover effects
     button:SetScript("OnEnter", function(self)
         if not isPressed then
             highlight:SetAlpha(0.65)
         end
     end)
-    
+
     button:SetScript("OnLeave", function(self)
         highlight:SetAlpha(0)
     end)
-    
+
     -- Click effects
     button:SetScript("OnMouseDown", function(self)
         isPressed = true
         highlight:SetAlpha(0)
         pressed:SetAlpha(1)
     end)
-    
+
     button:SetScript("OnMouseUp", function(self)
         isPressed = false
         pressed:SetAlpha(0)
@@ -268,20 +269,20 @@ function QuickTravel:CreateLFGButton()
             highlight:SetAlpha(0.65)
         end
     end)
-   
+
     -- Button text
     local buttonText = button:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     buttonText:SetPoint("CENTER", button, "CENTER", -2, 7)
     buttonText:SetText(L["QT_TITLE"])
     buttonText:SetTextColor(1, 0.82, 0)
     button.text = buttonText
-    
+
     -- Button icon
     local icon = button:CreateTexture(nil, "OVERLAY")
     icon:SetSize(37, 37)
     icon:SetAtlas("Crosshair_innkeeper_48")
     icon:SetPoint("RIGHT", buttonText, "LEFT", -5, 0)
-   
+
     -- Button click handler with toggle functionality
     button:SetScript("OnClick", function()
     if QuickTravel.mainFrame and QuickTravel.mainFrame:IsShown() then
@@ -293,7 +294,7 @@ function QuickTravel:CreateLFGButton()
         end
     end
     end)
-   
+
     -- Tab visibility management - only show in Dungeons & Raids tab
     local function UpdateButtonVisibility()
         local currentTab = PVEFrame.selectedTab or 1
@@ -303,7 +304,7 @@ function QuickTravel:CreateLFGButton()
             button:Hide()
         end
     end
-    
+
     -- Hook into tab clicks with delay for selectedTab to update
     for i = 1, 4 do
         local tab = _G["PVEFrameTab"..i]
@@ -313,7 +314,7 @@ function QuickTravel:CreateLFGButton()
             end)
         end
     end
-    
+
     -- Handle initial state when PVE frame opens
     PVEFrame:HookScript("OnShow", function()
         C_Timer.After(0.1, UpdateButtonVisibility)
@@ -324,8 +325,8 @@ function QuickTravel:CreateLFGButton()
         if QuickTravel.mainFrame and QuickTravel.mainFrame:IsShown() then
             QuickTravel:HideFrame()
         end
-    end)    
-    
+    end)
+
     button:Show()
     self.lfgButton = button
 end
@@ -547,7 +548,7 @@ function QuickTravel:UpdateCooldowns()
     if not self.mainFrame or not self.mainFrame.contentFrame then
         return
     end
-    
+
     local children = { self.mainFrame.contentFrame:GetChildren() }
     for _, child in ipairs(children) do
         if child.cooldown then
@@ -578,7 +579,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
     local portalButton = CreateFrame("Button", nil, contentFrame, "SecureActionButtonTemplate")
     portalButton:SetSize(310, 30)
     portalButton:SetPoint("TOPLEFT", contentFrame, "TOPLEFT", 0, yOffset)
-    
+
     -- Configure secure action attributes for known spells/toys only
     if portal.isKnown then
         if portal.isToy then
@@ -624,7 +625,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
     icon:SetSize(26, 26)
     icon:SetPoint("LEFT", portalButton, "LEFT", 15, 0)
     icon:SetTexture(portal.texture)
-    
+
     -- Desaturate icon for unknown portals
     if not portal.isKnown then
         icon:SetDesaturated(true)
@@ -646,7 +647,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
                 end
             end
         end)
-        
+
         -- Set initial cooldown state
         if portal.isToy then
             local startTime, duration = GetItemCooldown(portal.toyID)
@@ -665,7 +666,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
                 cooldown:SetCooldown(cooldownInfo.startTime, cooldownInfo.duration)
             end
         end
-        
+
         -- Store references for cooldown updates
         portalButton.cooldown = cooldown
         portalButton.spellID = portal.spellID
@@ -680,7 +681,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
     local portalText = portalButton:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     portalText:SetPoint("LEFT", icon, "RIGHT", 8, 0)
     portalText:SetText(portal.displayName)
-    
+
     -- Color text based on availability
     if portal.isKnown then
         portalText:SetTextColor(1, 1, 1)
@@ -696,7 +697,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
         end
 
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        
+
         if portal.isKnown then
             if portal.isToy then
                 GameTooltip:SetToyByItemID(portal.toyID)
@@ -706,7 +707,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
                 -- Handle Hearthstone variants with random selection
                 local useRandom = QuickTravel.db and QuickTravel.db.useRandomHearthstoneVariant
                 local selectedVariant = QuickTravel.db and QuickTravel.db.selectedHearthstoneVariant
-                
+
                 if useRandom then
                     -- Random variant: display tooltip with random selection info
                     GameTooltip:SetText(portal.displayName, 1, 1, 1)
@@ -728,7 +729,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
                 GameTooltip:AddLine(" ")
                 GameTooltip:AddLine("|cff00ff00" .. L["CLICK_TO_TELEPORT"] .. "|r")
             end
-            
+
             -- Favorite status instructions
             if QuickTravel:IsFavorite(portal.instanceKey) then
                 GameTooltip:AddLine("|cffff9999" .. L["RIGHT_CLICK_REMOVE_FAVORITE"] .. "|r")
@@ -737,14 +738,14 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
             end
         else
             -- Tooltip for unavailable portals
-            GameTooltip:SetText(portal.displayName, 0.5, 0.5, 0.5)           
+            GameTooltip:SetText(portal.displayName, 0.5, 0.5, 0.5)
             if portal.isToy or portal.isVariant then
                 GameTooltip:AddLine("|cffff6666" .. L["TOY_NOT_OWNED"] .. "|r")
             else
                 GameTooltip:AddLine("|cffff6666" .. L["SPELL_NOT_LEARNED"] .. "|r")
             end
         end
-        
+
         GameTooltip:Show()
     end)
 
@@ -770,7 +771,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
                         self:SetAttribute("item", nil)
                     end
                 end
-                
+
                 -- Update cooldown display after action
                 C_Timer.After(0.1, function()
                     if self.cooldown then
@@ -794,7 +795,7 @@ function QuickTravel:CreatePortalButton(contentFrame, portal, yOffset)
                         end
                     end
                 end)
-                
+
                 -- Auto-close if enabled in settings
                 if addon.Options.db.autoClose then
                     C_Timer.After(0.5, function()
@@ -817,7 +818,7 @@ function QuickTravel:ShowFrame()
 
     self.mainFrame:Show()
     isFrameShown = true
-    
+
     -- Refresh cooldowns when frame becomes visible
     self:UpdateCooldowns()
 end
@@ -897,10 +898,10 @@ function QuickTravel:GetEffectiveHearthstoneID(portal)
     if not portal.isVariant or not portal.variants then
         return portal.toyID or portal.spellID or 6948
     end
-    
+
     local useRandom = self.db and self.db.useRandomHearthstoneVariant
     local selectedVariant = self.db and self.db.selectedHearthstoneVariant
-    
+
     if useRandom then
         -- Select random owned variant
         local ownedVariants = {}
@@ -909,7 +910,7 @@ function QuickTravel:GetEffectiveHearthstoneID(portal)
                 table.insert(ownedVariants, variant.id)
             end
         end
-        
+
         if #ownedVariants > 0 then
             return ownedVariants[math.random(1, #ownedVariants)]
         end
@@ -917,7 +918,7 @@ function QuickTravel:GetEffectiveHearthstoneID(portal)
         -- Use specifically selected variant
         return selectedVariant
     end
-    
+
     -- Fallback to basic Hearthstone item
     return portal.fallback
 end
@@ -928,12 +929,12 @@ _G["QuickTravel"] = QuickTravel
 -- Basic LDB support
 if LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true) then
     local LDB = LibStub:GetLibrary("LibDataBroker-1.1")
-    
+
     LDB:NewDataObject("QuickTravel", {
         type = "launcher",
         icon = "Interface\\Icons\\inv_spell_arcane_portaldornogal",
         text = L["QT_TITLE"],
-        
+
         OnClick = function(self, button)
             if button == "LeftButton" then
                 QuickTravel:ToggleFrame()
@@ -941,7 +942,7 @@ if LibStub and LibStub:GetLibrary("LibDataBroker-1.1", true) then
                 addon.Options:ToggleOptionsFrame()
             end
         end,
-        
+
         OnTooltipShow = function(tooltip)
             tooltip:AddLine("|cff00ff00" .. L["QT_TITLE"] .. "|r")
             tooltip:AddLine("|cffffffffLeft-click:|r " .. L["TOGGLE_QUICKTRAVEL"])
