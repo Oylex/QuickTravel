@@ -1,9 +1,9 @@
-## Interface: 120000
+## Interface: 120001
 ## Title: QuickTravel
 ## Notes: Mythic+ & Raid Portal Hub
 ## Notes-ruRU: QuickTravel - аддон, который объединяет все Ваши заклинания телепортации. Больше не нужно ничего искать, телепортируйтесь с удовольствием
 ## Author: Zazou
-## Version: @project-version@
+## Version: oylex/custom
 ## SavedVariables: QuickTravelDB
 ## X-Curse-Project-ID: 1311367
 ## AddonCompartmentFunc: QuickTravel_OnAddonCompartmentClick
